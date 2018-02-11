@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="org.mygame.sample" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+    <name>MyGameRocket</name>
+    <description>
+        Hello Joe
+    </description>
+    <author email="saksitd2012@gmail.com" href="http://phonegap.com">
+        GTEC Team by joegGTEC
+    </author>  
+</widget>

@@ -1,0 +1,262 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <canvas id="mycanvas" width="480" height="320" style="border:3px solid red"></canvas>
+    <audio src="sounds/bg.ogg" loop autoplay="autoplay"></audio>
+    <script type="text/javascript" src="js/collision.js"></script>
+    <script>
+        var fps = 50;
+        var posRocket = { x: 200, y: 200 };
+        var imgRocket = new Image();
+        var kfRocket = 1;
+        imgRocket.src = "images/rocket.png";
+        var audioBoom = new Audio("sounds/shooting.ogg");
+        var ctx = document.getElementById("mycanvas").getContext("2d");
+        var timing = 0;
+        var imgBg1 = new Image();
+        var imgBg2 = new Image();
+        var imgBg3 = new Image();
+        var posBossX = 170;
+        var imgBoss = new Image();
+
+        var imgE1 = new Image();
+        var imgE2 = new Image();
+
+        var kfEnemy = 1;
+        var countEne = 0;
+        var delayEne = 10;
+
+        var imgEne = new Image();
+        var posE1 = { x: Math.random() * 320, y: 0 };
+        var posE2 = { x: Math.random() * 320, y: -100 };
+        var ene1 = new drawEnemy(0.01, 1, posE1.x, posE1.y, 50, 50);
+        var ene2 = new drawEnemy(0.05, 2, posE2.x, posE2.y, 50, 50);
+
+        var imgMissile = new Image();  //pre-loading
+        var posMissile = { enable: false, keyframe: 1, x: 0, y: 0 };
+
+        var normaliz = { deltaManitude: 0, deltaX: 0, deltaY: 0 };
+        var rocketMove = { enableX: false, enableY: false, targetX: 0, targetY: 0 };
+
+        var imgStatus = new Image();
+
+        setInterval(update, 1000 / fps, false);
+
+        function update() {
+            document.addEventListener("click", chkClick, false);
+            timing += 0.2;
+            document.addEventListener("keydown", chkKeyDown, false);
+            document.addEventListener("keyup", chkKeyUp, false);
+            clearCanvas();
+            drawBg(timing);
+            drawText();
+            drawRocket(posRocket.x, posRocket.y);
+            drawBoss(posBossX, 0);
+            if(posBossX > posRocket.x){
+                posBossX -= 0.5;
+            }else{
+                posBossX += 0.5;
+            }
+
+            posE1.y++;
+            ene1.setY(posE1.y);
+            ene1.draw();
+            posE2.y++;
+            ene2.setY(posE2.y);
+            ene2.draw();
+            if (posE1.y > 320) posE1.y = 0;
+            if (posE2.y > 320) posE2.y = 0;
+
+            if (posMissile.enable == true) {
+                drawMissile(posMissile.keyframe, posMissile.x, posMissile.y);
+                --posMissile.y;
+                if (posMissile < 0) posMissile.enable = false;
+                if (posMissile.keyframe == 1) {
+                    posMissile.keyframe = 2;
+                } else {
+                    posMissile.keyframe = 1;
+                }
+
+            }
+
+            if (rocketMove.targetX != posRocket.x && rocketMove.enableX == true) {
+                posRocket.x += normaliz.deltaX / normaliz.deltaManitude * 2;
+            }
+            if (rocketMove.targetY != posRocket.y && rocketMove.enableY == true) {
+                posRocket.y += normaliz.deltaY / normaliz.deltaManitude * 2;
+            }
+            if (Math.abs(rocketMove.targetX - posRocket.x) <= 1) {
+                rocketMove.enableX = false;
+                kfRocket = 1;
+            }
+            if (Math.abs(rocketMove.targetY - posRocket.y) <= 1) {
+                rocketMove.enableY = false;
+                kfRocket = 1;
+            }
+
+            var collision_Boss_Missile = collision(posBossX, 0, 150, 90, posMissile.x, posMissile.y, 25, 25);
+            var collision_E1_Missile = collision(posRocket.x, posRocket.y, 50, 50, posE1.x, posE1.y, 40, 40);
+            var collision_E2_Missile = collision(posRocket.x, posRocket.y, 50, 50, posE2.x, posE2.y, 40, 40);
+            if (collision_Boss_Missile == true) drawStatus(true);
+            if (collision_E1_Missile == true || collision_E2_Missile == true) drawStatus(false);
+            
+
+
+        }
+
+        function chkClick(e) {
+            normaliz.deltaX = e.pageX - posRocket.x;
+            normaliz.deltaY = e.pageY - posRocket.y;
+            normaliz.deltaManitude = Math.sqrt(Math.pow(normaliz.deltaX, 2) + Math.pow(normaliz.deltaY, 2));
+            rocketMove.targetX = e.pageX;
+            rocketMove.targetY = e.pageY;
+            rocketMove.enableX = true;
+            rocketMove.enableY = true;
+            if (normaliz.deltaX >= 0) {
+                kfRocket = 3;
+            } else {
+                kfRocket = 2;
+            }
+        }
+
+        function chkKeyDown(e) {
+            var key = e.which || e.keyCode;
+            //alert(key.toString());
+            if (String.fromCharCode(key) == "W" || key == 38) {
+               
+                posRocket.y -= 5;
+            }
+            if (String.fromCharCode(key) == "S" || key == 40) {
+                posRocket.y += 5;
+            }
+            if (String.fromCharCode(key) == "A" || key == 37) {
+                kfRocket = 2;
+                posRocket.x -= 5;
+            }
+            if (String.fromCharCode(key) == "D" || key == 39) {
+                kfRocket = 3;
+                posRocket.x += 5;
+            }
+            if (String.fromCharCode(key) == "X") {
+                audioBoom.play();
+                posMissile.enable = true;
+                posMissile.x = posRocket.x;
+                posMissile.y = posRocket.y;
+            }
+        }
+
+        function chkKeyUp(e) {
+            var key = e.which || e.keyCode;
+            if (String.fromCharCode(key) == "A" || String.fromCharCode(key) == "D") {
+                kfRocket = 1;
+            }
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, 480, 320);
+
+        }
+
+        function drawText() {
+            ctx.fillStyle = "red";
+            ctx.font = "20px Comis Sans Ms";
+            ctx.fillText("Score x:" + Math.round(posRocket.x) + ",y:" + Math.round(posRocket.y), 10, 20);
+        }
+
+
+        function drawTextLine2(msg) {
+            ctx.fillStyle = "red";
+            ctx.font = "20px Comis Sans Ms";
+            ctx.fillText("Collision", 10, 40);
+        }
+
+        function drawRocket(posx, posy) {
+            ctx.drawImage(imgRocket, (kfRocket - 1) * 100, 0, 100, 100, posx, posy, 50, 50);
+        }
+
+        function drawBg(timing) {
+            imgBg1.src = "images/bg1.png";
+            imgBg2.src = "images/bg2.png";
+            imgBg3.src = "images/bg3.png";
+            ctx.drawImage(imgBg1, 0, 320 - timing / 2, 480, 320, 0, 0, 480, 320);
+            ctx.drawImage(imgBg2, 0, 320 - timing, 480, 320, 0, 0, 480, 320);
+            ctx.drawImage(imgBg3, 0, 320 - timing * 1.5, 480, 320, 0, 0, 480, 320);
+        }
+
+        function drawBoss(posx, posy) {
+            imgBoss.src = "images/boss.png";
+            ctx.drawImage(imgBoss, posx, posy);
+        }
+
+        //function drawE1(kfEnemy, row, posx, posy) {
+        //    imgE1.src = "images/enemy.png"; //100*100px
+        //    ctx.drawImage(imgE1, (kfEnemy - 1) * 50, (row - 1) * 50, 50, 50, posx, posy, 50, 50);
+        //}
+
+        //function drawE2(kfEnemy, row, posx, posy) {
+        //    imgE2.src = "images/enemy.png"; //100*100px
+        //    ctx.drawImage(imgE2, (kfEnemy - 1) * 50, (row - 1) * 50, 50, 50, posx, posy, 50, 50);
+        //}
+
+        function drawEnemy(delay, row, posx, posy, desW, desH) {
+
+            this.count = 0;
+            this.enable = true;
+            this.keyframe = 1;
+            this.row = row;
+            this.delay = delay;
+            this.posx = posx;
+            this.posy = posy;
+            this.desW = desW;
+            this.desH = desH;
+
+            drawEnemy.prototype.setX = function (posx) {
+                this.posx = posx;
+            }
+            drawEnemy.prototype.setY = function (posy) {
+                this.posy = posy;
+            }
+            drawEnemy.prototype.enable = function (enable) {
+                this.enable = enable;
+            }
+            drawEnemy.prototype.draw = function () {
+                this.count += this.delay;
+                if (this.count >= 1) {
+                    if (this.keyframe == 1) {
+                        this.keyframe = 2;
+                    } else {
+                        this.keyframe = 1;
+                    }
+
+                    if (this.count >= 1) this.count = 0;
+                }
+                imgEne.src = "images/enemy.png";
+                ctx.drawImage(imgEne, (this.keyframe - 1) * 50, (this.row - 1) * 50, 50, 50, this.posx, this.posy, this.desW, this.desH);
+
+            }
+        }
+
+        function drawMissile(keyframe, posx, posy) {
+            imgMissile.src = "images/missile.png";
+            ctx.drawImage(imgMissile, (keyframe - 1) * 25, 0, 25, 25, posx, posy, 25, 25);
+        }
+
+
+        function drawStatus(status) {
+            if (status == true) {
+                imgStatus.src = "images/win.png";
+            } else {
+                imgStatus.src = "images/lost.png";
+            }
+            ctx.drawImage(imgStatus, 0, 0);
+        }
+    </script>
+
+</body>
+</html>

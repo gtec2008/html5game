@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <canvas id="mycanvas" width="480" height="320" style="position:absolute;left:0;top:0;"></canvas>
+     <script>
+         var fps = 50;
+         var ctx = document.getElementById("mycanvas").getContext("2d");
+         var imgBg = new Image();
+         var imgBtn = new Image();
+         setInterval(update, 1000 / fps);
+
+         function update() {
+             document.addEventListener("keydown", chkKeyDown);
+             drawBg();
+
+         }
+
+         function chkKeyDown(e) {
+             var key = e.which || e.keyCode;
+             window.location = "game.html";
+         }
+
+         function drawBg() {
+             imgBg.src = "images/howtoplay.png";
+             ctx.drawImage(imgBg, 0, 0);
+         }
+
+
+     </script>
+</body>
+</html>

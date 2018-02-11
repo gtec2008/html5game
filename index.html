@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Star Mission</title>
+</head>
+<body>
+    <canvas id="mycanvas" width="480" height="320" style="position:absolute;left:0;top:0;"></canvas>
+    <audio loop  autoplay="autoplay" src="sounds/intro.ogg"></audio>
+    <script>
+        var fps = 50;
+        var ctx = document.getElementById("mycanvas").getContext("2d");
+        var imgBg = new Image();
+        var imgBtn = new Image();
+        var kfBtn = 1;
+        setInterval(update, 1000 / fps);
+
+        function update() {
+            document.addEventListener("keydown", chkKeyDown, false);
+            drawBg();
+            drawBtn(kfBtn);
+
+        }
+
+        function chkKeyDown(e) {
+            var key = e.which || e.keyCode;
+            if (key == 87 || key == 38) {
+                kfBtn = 1;
+
+            }
+
+            if (key == 83 || key == 40) {
+                kfBtn = 2;
+            }
+
+            if (key == 13) {
+                if (kfBtn == 1) {
+                    window.location = "howtoplay.html";
+                }
+                if (kfBtn == 2) {
+                    window.close();
+                }
+            }
+
+        }
+
+        function drawBg() {
+            imgBg.src = "images/menubg.png";
+            ctx.drawImage(imgBg, 0, 0);
+        }
+        
+        function drawBtn(kf) {
+            imgBtn.src = "images/button.png";
+            ctx.drawImage(imgBtn, (kf - 1) * 480, 0, 480, 320, 0, 0, 480, 320);
+        }
+
+
+
+
+    </script>
+</body>
+</html>
